@@ -10,3 +10,27 @@ namedBin["frc_interceptor"] = "frc_interceptor.so"
 # Dependencies
 
 requires "nim >= 1.4.4"
+requires "nimgen >= 0.1.4"
+
+skipDirs = @["tests","src"]
+
+# Dependencies
+import distros
+import os
+
+task setup, "Generate":
+  var cmd_pre = "cd third_party"
+  var cmd_post = ""
+  if detectOs(Windows):
+    cmd_pre &= "&&cmd /c \""
+    cmd_post = "\""
+  else:
+    cmd_pre &= ";"
+
+  if not existsFile("third_party/duktape/duktape_sys.nim"):
+    exec cmd_pre & "nimgen duktape.cfg" & cmd_post
+
+
+before build:
+    setupTask()
+  
