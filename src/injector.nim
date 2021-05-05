@@ -1,4 +1,8 @@
 import tables
+import common
+import logging
+
+var logger = newLogger("injector")
 
 # Global holding all the handlers
 var injector_handlers* {.global.} = initTable[string, pointer]()
@@ -22,6 +26,7 @@ include injector_macro
 
 proc dlsym*(handle: pointer, name: constCStr): pointer {.exportc, dynlib, cdecl.} = 
   let cname = cast[cstring](name)
+  logger.log(lvlInfo, cname)
   if real_dlsym == nil:
     real_dlsym = cast[dlsym_type](glibc_dl_sym(cast[pointer](RTLD_NEXT), "dlsym", cast[pointer](dlsym)))
     when defined(arm):  # ???
@@ -30,6 +35,8 @@ proc dlsym*(handle: pointer, name: constCStr): pointer {.exportc, dynlib, cdecl.
       # Explode
       echo cast[string]("Oops")
       return
+  else:
+    initialize_all()
       
   if cname == "dlsym":
     return dlsym

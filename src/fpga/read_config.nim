@@ -4,10 +4,11 @@ import parsecfg, streams, strutils
 type
   RegisterConfig* = object
     registers*: seq[Register]
-    show_unknown*: bool
+    print_unknown*: bool
+    print_regs*: bool
 
 proc newRegisterConfig(): RegisterConfig =
-  return RegisterConfig(show_unknown:false)
+  return RegisterConfig(print_unknown:false, print_regs:false)
 
 
 proc read_config*(filename: string): RegisterConfig =
@@ -79,9 +80,14 @@ proc read_config*(filename: string): RegisterConfig =
         else:
           raise newException(ValueError, p.errorStr("Invalid key"))
       of cfgOption:
-        if e.key.cmpIgnoreCase("show_unknown") == 0:
+        if e.key.cmpIgnoreCase("print_unknown") == 0:
           try:
-            config.show_unknown = e.value.parseBool()
+            config.print_unknown = e.value.parseBool()
+          except ValueError:
+            raise newException(ValueError, p.errorstr(getCurrentExceptionMsg()))
+        elif e.key.cmpIgnoreCase("print_regs") == 0:
+          try:
+            config.print_regs = e.value.parseBool()
           except ValueError:
             raise newException(ValueError, p.errorstr(getCurrentExceptionMsg()))
         else:
